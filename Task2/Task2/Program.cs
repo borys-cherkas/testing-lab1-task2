@@ -28,6 +28,8 @@ namespace Task2
 
         static void Main(string[] args)
         {
+            Console.OutputEncoding = Encoding.UTF8;
+
             PrintGreeting();
 
             bool parseSuccessfull = ParseDataFromArgs(args);
@@ -38,8 +40,6 @@ namespace Task2
 
             PrintCollectedData();
             CalculateAndPrintResults();
-
-            Console.ReadLine();
         }
 
         private static void PrintGreeting()
@@ -84,7 +84,7 @@ namespace Task2
                 return null;
 
             string[] splittedArr = args[0].Split(',');
-            string errorMessage = " ---- Invalid data in arguments :) ---- ";
+            string errorMessage = "Неверные данные переданы в аругменты.";
             if (splittedArr.Length != 3)
             {
                 Console.WriteLine(errorMessage);
@@ -95,13 +95,20 @@ namespace Task2
 
         private static bool TryParseLengthFromString(string sideLengthString)
         {
-            string errorMessage = " ---- Invalid triangle side length in arguments :) ---- ";
+            string errorMessage = "В параметры передана неверная длина стороны треугольника";
             bool parseRes = ParseInt(sideLengthString, out length, errorMessage);
             if (!parseRes)
                 return false;
+            if (sideLengthString.TrimStart().Length != sideLengthString.Length)
+            {
+                errorMessage = "Длина треугольника должна начинаться с цифры.";
+                Console.WriteLine(errorMessage);
+                return false;
+            }
+
             if (length < 0)
             {
-                errorMessage = " ---- Invalid triangle side length in arguments. Length must be not less than 0. :) ---- ";
+                errorMessage = "Длина треугольника не может быть меньше 0";
                 Console.WriteLine(errorMessage);
                 return false;
             }
@@ -110,20 +117,44 @@ namespace Task2
 
         private static bool TryParseAngleAlphaFromString(string alphaString)
         {
-            string errorMessage = " ---- Invalid triangle angle 1 in arguments :) ---- ";
+            string errorMessage = "В аргументы передан неверный угол 1";
             bool parseRes = ParseInt(alphaString, out alpha, errorMessage);
             if (!parseRes)
                 return false;
+            if (alphaString.TrimStart().Length != alphaString.Length)
+            {
+                errorMessage = "Угол 1 должен начинаться с цифры.";
+                Console.WriteLine(errorMessage);
+                return false;
+            }
+            if (alpha < 1 || alpha > 179)
+            {
+                errorMessage = "Угол должен быть между 0 и 180 градусами невключительно.";
+                Console.WriteLine(errorMessage);
+                return false;
+            }
 
             return true;
         }
 
         private static bool TryParseAngleBetaFromString(string betaString)
         {
-            string errorMessage = " ---- Invalid triangle angle 2 in arguments :) ---- ";
+            string errorMessage = "В аргументы передан неверный угол 2";
             bool parseRes = ParseInt(betaString, out beta, errorMessage);
             if (!parseRes)
                 return false;
+            if (betaString.Trim().Length != betaString.Length)
+            {
+                errorMessage = "Угол 2 должен начинаться с цифры.";
+                Console.WriteLine(errorMessage);
+                return false;
+            }
+            if (beta < 1 || beta > 179)
+            {
+                errorMessage = "Угол должен быть между 0 и 180 градусами невключительно.";
+                Console.WriteLine(errorMessage);
+                return false;
+            }
 
             return true;
         }
@@ -140,7 +171,7 @@ namespace Task2
             bool res;
             do
             {
-                Console.WriteLine("Enter triangle side length: ");
+                Console.WriteLine("Введите длину строны треугольника: ");
                 string inputStr = Console.ReadLine();
                 res = TryParseLengthFromString(inputStr);
             } while (!res);
@@ -150,7 +181,7 @@ namespace Task2
             bool res;
             do
             {
-                Console.WriteLine("Enter triangle angle 1: ");
+                Console.WriteLine("Введите угол 1: ");
                 string inputStr = Console.ReadLine();
                 res = TryParseAngleAlphaFromString(inputStr);
             } while (!res);
@@ -160,7 +191,7 @@ namespace Task2
             bool res;
             do
             {
-                Console.WriteLine("Enter triangle angle 2: ");
+                Console.WriteLine("Введите угол 2: ");
                 string inputStr = Console.ReadLine();
                 res = TryParseAngleBetaFromString(inputStr);
             } while (!res);
@@ -188,13 +219,14 @@ namespace Task2
             Console.WriteLine($"Длина стороны треугольника: {length}");
             Console.WriteLine($"Прилегающий угол 1: {alpha}");
             Console.WriteLine($"Прилегающий угол 2: {beta}");
+            
             Console.WriteLine();
             Console.WriteLine(" ---------------------------------------------");
         }
 
         private static void CalculateAndPrintResults()
         {
-            TransformAnglesIfNeeded();
+            // TransformAnglesIfNeeded();
 
             bool res = CheckAndPrintIfTriangle();
             if (!res)
@@ -203,45 +235,16 @@ namespace Task2
             PrintTriangleCharacteristics();
         }
 
-        private static void TransformAnglesIfNeeded()
-        {
-            if (alpha >= 360 || alpha <= -360)
-            {
-                alpha = alpha % 360;
-            }
-
-            if (beta >= 360 || beta <= -360)
-            {
-                beta = beta % 360;
-            }
-
-            if (alpha < 0)
-            {
-                alpha = 360 + alpha;
-            }
-
-            if (beta < 0)
-            {
-                beta = 360 + beta;
-            }
-        }
-
         private static bool CheckAndPrintIfTriangle()
         {
-            if (length != 0 && (alpha > 180 && beta < 180) || (alpha < 180 && beta > 180))
+            if (length == 0)
             {
                 Console.WriteLine("Фигура не является треугольником! :(");
                 return false;
             }
 
-            if (alpha > 180 && beta > 180)
-            {
-                alpha = 360 - alpha;
-                beta = 360 - beta;
-            }
-
             int angleSum = beta + alpha;
-            if (angleSum == 0 || angleSum >= 180)
+            if (angleSum >= 180)
             {
                 Console.WriteLine("Фигура не является треугольником! :(");
                 return false;
@@ -254,12 +257,13 @@ namespace Task2
 
         private static void PrintTriangleCharacteristics()
         {
-            if (beta == alpha || (180 - beta == alpha) || (180 - alpha == beta))
+            int gamma = 180 - beta - alpha;
+            if (beta == alpha  || gamma == alpha || gamma == beta)
             {
                 Console.WriteLine("Кроме того, треугольником равнобедренным! :)");
             }
 
-            if (beta == 90 || alpha == 90 || (beta == 45 && alpha == 45))
+            if (beta == 90 || alpha == 90 || gamma == 90)
             {
                 Console.WriteLine("Кроме того, треугольником прямоугольным! :)");
             }
